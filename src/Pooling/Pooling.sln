@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pooling", "Pooling\Pooling.csproj", "{58F22051-A06A-4CB2-8460-E2B1A0F7FDF4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pooling.Test", "Pooling.Test\Pooling.Test.csproj", "{28BBAF18-0D1E-4A7F-B9AF-7C00CA49AD7A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{58F22051-A06A-4CB2-8460-E2B1A0F7FDF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58F22051-A06A-4CB2-8460-E2B1A0F7FDF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58F22051-A06A-4CB2-8460-E2B1A0F7FDF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58F22051-A06A-4CB2-8460-E2B1A0F7FDF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28BBAF18-0D1E-4A7F-B9AF-7C00CA49AD7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28BBAF18-0D1E-4A7F-B9AF-7C00CA49AD7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28BBAF18-0D1E-4A7F-B9AF-7C00CA49AD7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28BBAF18-0D1E-4A7F-B9AF-7C00CA49AD7A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,3 @@
+﻿This implementation of object pool was originally taken from here:
+http://stackoverflow.com/questions/2510975/c-sharp-object-pooling-pattern-implementation/2572919.
+I don't know the real name of the author, but appreciate their efforts!
