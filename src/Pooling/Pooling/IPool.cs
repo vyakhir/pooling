@@ -13,7 +13,7 @@ using System;
 namespace Pooling
 {
     /// <summary>
-    /// A generic object pool api.
+    /// Defines generic object pooling api.
     /// </summary>
     /// <typeparam name="T">type of object to pool</typeparam>
     public interface IPool<T> : IDisposable 
@@ -29,7 +29,8 @@ namespace Pooling
         /// Puts an objects back into pool.
         /// </summary>
         /// <param name="item">a pooled object</param>
-        void Release(T item);
+        /// <returns>number of available items in the pool</returns>
+        int Release(T item);
 
         /// <summary>
         /// Returns <c>true</c> if the pool has been disposed.
@@ -37,8 +38,13 @@ namespace Pooling
         bool IsDisposed { get; }
 
         /// <summary>
-        /// Returns pool size.
+        /// Returns pool capacity (maximum number of items the pool can handle).
         /// </summary>
-        int Size { get; }
+        int Capacity { get; }
+
+        /// <summary>
+        /// Returns number of available items in the pool.
+        /// </summary>
+        int Count { get; }
     }
 }

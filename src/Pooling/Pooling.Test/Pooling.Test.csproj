@@ -47,18 +47,14 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CircularStoreTest.cs" />
+    <Compile Include="Stubs\ObjectStub.cs" />
     <Compile Include="PoolTest.cs" />
     <Compile Include="QueueStoreTest.cs" />
-    <Compile Include="LazyLoaderTest.cs" />
-    <Compile Include="EagerLoaderTest.cs" />
+    <Compile Include="LazyManagerTest.cs" />
+    <Compile Include="EagerManagerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StackStoreTest.cs" />
   </ItemGroup>

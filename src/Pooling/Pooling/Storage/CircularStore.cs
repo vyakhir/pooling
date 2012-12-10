@@ -65,7 +65,7 @@ namespace Pooling.Storage
 
         public void Store(T item)
         {
-            Slot slot = slots.Find(s => object.Equals(s.Item, item));
+            Slot slot = slots.Find(s => Equals(s.Item, item));
             if (slot == null)
             {
                 slot = new Slot(item);

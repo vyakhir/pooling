@@ -10,107 +10,133 @@
 
 using System;
 using System.Threading;
-using Pooling.Loading;
+using Pooling.Assertions;
+using Pooling.Management;
 using Pooling.Storage;
 
 namespace Pooling
 {
     /// <summary>
-    /// Implementation of <see cref="IPool"/>. This is an abstract implementation responsible only pooling.
-    /// The strategies of creating and storing pooled items are delegated to external entities.
+    /// Implementation of <see cref="IPool"/>. 
+    /// <br />
+    /// This is a generic implementation, which responsibilityis just thread safety. 
+    /// Actual pool management is delegated to pool item manager.
     /// </summary>
     /// <remarks>The class is thread safe.</remarks>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">type of object to handle</typeparam>
     public class Pool<T> : IPool<T> 
         where T : IDisposable
     {
-        private readonly object syncRoot = new object();
-        private readonly IPoolItemLoader<T> loader;
-        private readonly IItemStore<T> itemStore;
-        private readonly int size;
-        private readonly Semaphore poolSizeSemaphore;
-        private bool isDisposed;
+        /// <summary>
+        /// Default pool capacity.
+        /// </summary>
+        private const int DefaultCapacity = 100;
+
+        private readonly IPoolItemManager<T> manager;
+        private readonly Semaphore poolSemaphore;
+
+        private int count;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="size">max pool size</param>
-        /// <param name="factory">factory method to create pool items</param>
-        /// <param name="loader">pool item loader</param>
-        /// <param name="itemStore">pool item storage</param>
-        public Pool(int size, Func<Pool<T>, T> factory, 
-                    IPoolItemLoader<T> loader, IItemStore<T> itemStore)
+        /// <param name="factory">factory method to create items</param>
+        /// <param name="capacity">pool capacity (optional)</param>
+        public Pool(Func<T> factory, int capacity = DefaultCapacity)
+            : this(capacity)
         {
-            if (size <= 0)
-            {
-                throw new ArgumentOutOfRangeException("size", size, "Argument 'size' must be greater than zero.");
-            }
-            if (factory == null)
-            {
-                throw new ArgumentNullException("factory");
-            }
+            manager = new EagerManager<T>(new QueueStore<T>(capacity), factory, capacity);
+        }
 
-            this.size = size;
-            this.loader = loader;
-            loader.Factory = () => factory(this);
-            loader.ItemStore = itemStore;
-            this.itemStore = itemStore;
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="factory">factory method to create items</param>
+        /// <param name="capacity">pool capacity (optional)</param>
+        public Pool(Func<IPool<T>, T> factory, int capacity = DefaultCapacity)
+            : this(capacity)
+        {
+            manager = new EagerManager<T>(new QueueStore<T>(capacity), () => factory(this), capacity);
+        }
 
-            poolSizeSemaphore = new Semaphore(size, size);
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="manager">pool item manager</param>
+        /// <param name="capacity">pool capacity (optional)</param>
+        public Pool(IPoolItemManager<T> manager, int capacity = DefaultCapacity)
+            : this(capacity)
+        {
+            this.manager = manager;
+        }
 
-            if (loader.IsPreloadSupported)
-            {
-                loader.Preload(size);
-            }
+        private Pool(int capacity)
+        {
+            Assert.ArgumentInRange(capacity > 0, "capacity", capacity);
+            poolSemaphore = new Semaphore(capacity, capacity);
+            count = Capacity = capacity;
         }
 
         #region Implementation of IPool
 
         public T Acquire()
         {
-            poolSizeSemaphore.WaitOne();
-            lock (syncRoot)
+            poolSemaphore.WaitOne();
+            lock (manager)
             {
-                return loader.LoadItem();
+                try
+                {
+                    var item = manager.GetItem();
+                    count--;
+                    return item;
+                }
+                catch
+                {
+                    poolSemaphore.Release();
+                    throw;
+                }
             }
         }
 
-        public void Release(T item)
+        public int Release(T item)
         {
-            lock (syncRoot)
+            lock (manager)
             {
-                itemStore.Store(item);
+                manager.PutItem(item);
+                count++;
+                poolSemaphore.Release();
+                return Count;
             }
-            poolSizeSemaphore.Release();
         }
 
         public void Dispose()
         {
-            if (isDisposed)
+            lock (manager)
             {
-                return;
-            }
-
-            isDisposed = true;
-            lock (syncRoot)
-            {
-                while (itemStore.Count > 0)
+                if (IsDisposed)
                 {
-                    var disposable = itemStore.Fetch();
-                    disposable.Dispose();
+                    return;
+                }
+
+                IsDisposed = true;
+                manager.Dispose();
+            }
+            poolSemaphore.Close();
+        }
+
+        public bool IsDisposed { get; private set; }
+
+        public int Capacity { get; private set; }
+
+        public int Count
+        {
+            get
+            {
+                lock (manager)
+                {
+                    return count;
                 }
             }
-            poolSizeSemaphore.Close();
-        }
-
-        public bool IsDisposed
-        {
-            get { return isDisposed; }
-        }
-
-        public int Size
-        {
-            get { return size; }
         }
 
         #endregion

@@ -8,6 +8,8 @@
  *
  *************************************************************************************************************/
 
+using System;
+
 namespace Pooling.Storage
 {
     /// <summary>
@@ -20,6 +22,7 @@ namespace Pooling.Storage
         /// Fetches an object from storage.
         /// </summary>
         /// <returns>object instance</returns>
+        /// <exception cref="InvalidOperationException">if pool capacity is exceeded</exception>
         T Fetch();
 
         /// <summary>

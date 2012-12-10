@@ -7,8 +7,9 @@
 
 using System;
 using NUnit.Framework;
-using Pooling.Loading;
+using Pooling.Management;
 using Pooling.Storage;
+using Pooling.Test.Stubs;
 using Rhino.Mocks;
 
 namespace Pooling.Test
@@ -21,29 +22,26 @@ namespace Pooling.Test
     {
         private const int PoolSize = 5;
 
-        private IPoolItemLoader<IDisposable> loaderMock;
-        private IItemStore<IDisposable> itemStoreMock;
-        private IPool<IDisposable> pool;
+        private IPoolItemManager<ObjectStub> managerMock;
+        private IPool<ObjectStub> pool;
             
         [SetUp]
         public void SetUp()
         {
-            loaderMock = MockRepository.GenerateMock<IPoolItemLoader<IDisposable>>();
-            itemStoreMock = MockRepository.GenerateMock<IItemStore<IDisposable>>();
-            pool = new Pool<IDisposable>(PoolSize, p => new ObjectStub(), loaderMock, itemStoreMock);
+            managerMock = MockRepository.GenerateMock<IPoolItemManager<ObjectStub>>();
+            pool = new Pool<ObjectStub>(managerMock, PoolSize);
         }
 
         [TearDown]
         public void TearDown()
         {
-            loaderMock.VerifyAllExpectations();
-            itemStoreMock.VerifyAllExpectations();
+            managerMock.VerifyAllExpectations();
         }
 
         [Test]
-        public void TestSize()
+        public void TestCapacity()
         {
-            Assert.AreEqual(PoolSize, pool.Size);
+            Assert.AreEqual(PoolSize, pool.Capacity);
         }
 
         [Test]
@@ -55,16 +53,8 @@ namespace Pooling.Test
         [Test]
         public void TestDispose()
         {
-            var o = MockRepository.GenerateMock<IDisposable>();
-            o.Expect(m => m.Dispose());
-
-            itemStoreMock.Expect(m => m.Count).Return(1).Repeat.Once();
-            itemStoreMock.Expect(m => m.Fetch()).Return(o);
-            itemStoreMock.Expect(m => m.Count).Return(0);
-
+            managerMock.Expect(m => m.Dispose());
             pool.Dispose();
-            Assert.IsTrue(pool.IsDisposed);
-            o.VerifyAllExpectations();
         }
 
         [Test]
@@ -72,8 +62,9 @@ namespace Pooling.Test
         {
             var o = new ObjectStub();
 
-            loaderMock.Expect(m => m.LoadItem()).Return(o);
+            managerMock.Expect(m => m.GetItem()).Return(o);
             Assert.AreEqual(o, pool.Acquire());
+            Assert.AreEqual(PoolSize - 1, pool.Count);
         }
 
         [Test]
@@ -83,15 +74,9 @@ namespace Pooling.Test
 
             pool.Acquire();
 
-            itemStoreMock.Expect(m => m.Store(o));
-            pool.Release(o);
-        }
-    }
-
-    public class ObjectStub : IDisposable
-    {
-        public void Dispose()
-        {
+            managerMock.Expect(m => m.PutItem(o));
+            Assert.AreEqual(PoolSize, pool.Release(o));
+            Assert.AreEqual(PoolSize, pool.Count);
         }
     }
 }

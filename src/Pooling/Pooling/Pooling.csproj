@@ -33,17 +33,14 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assertions\Assert.cs" />
     <Compile Include="IPool.cs" />
-    <Compile Include="Loading\EagerLoader.cs" />
-    <Compile Include="Loading\IPoolItemLoader.cs" />
-    <Compile Include="Loading\LazyLoader.cs" />
+    <Compile Include="Management\EagerManager.cs" />
+    <Compile Include="Management\IPoolItemManager.cs" />
+    <Compile Include="Management\LazyManager.cs" />
+    <Compile Include="Management\PoolItemManagerBase.cs" />
     <Compile Include="Pool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Storage\CircularStore.cs" />
